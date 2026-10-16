@@ -8,10 +8,9 @@ build
 next-env.d.ts
 *.tsbuildinfo
 
-# env
-.env
-.env.local
-.env*.local
+# env — всё скрыто, кроме примера
+.env*
+!.env.example
 
 # vercel
 .vercel

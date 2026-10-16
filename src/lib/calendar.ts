@@ -1,6 +1,6 @@
 import { addDays, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek } from "date-fns";
 import { DEFAULT_PATTERN, isWorkByPattern } from "./schedule";
-import type { Employee } from "./types";
+import type { Employee, Sale } from "./types";
 
 export function toIso(date: Date): string {
   return format(date, "yyyy-MM-dd");
@@ -53,6 +53,36 @@ export function buildMonthGrid(
   }
 
   return cells;
+}
+
+export interface MonthTotals {
+  workDays: number;
+  shiftsWithSales: number;
+  revenue: number;
+  payout: number;
+}
+
+export function monthTotals(
+  cells: CalendarCell[],
+  salesByDate: Record<string, Sale>,
+): MonthTotals {
+  let workDays = 0;
+  let shiftsWithSales = 0;
+  let revenue = 0;
+  let payout = 0;
+
+  for (const cell of cells) {
+    if (!cell.inMonth) continue;
+    if (cell.isWork) workDays += 1;
+    const sale = salesByDate[cell.iso];
+    if (sale) {
+      revenue += sale.total_amount;
+      payout += sale.payout;
+      shiftsWithSales += 1;
+    }
+  }
+
+  return { workDays, shiftsWithSales, revenue, payout };
 }
 
 export function workDaysInMonth(

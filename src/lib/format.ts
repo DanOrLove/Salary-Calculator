@@ -35,6 +35,20 @@ export function moneyShort(value: number): string {
   return PLAIN.format(safe);
 }
 
+function trimDecimal(value: number): string {
+  const rounded = Math.round(value * 10) / 10;
+  if (Number.isInteger(rounded)) return String(rounded);
+  return rounded.toFixed(1).replace(".", ",");
+}
+
+export function moneyCompact(value: number): string {
+  const safe = Number.isFinite(value) ? value : 0;
+  const abs = Math.abs(safe);
+  if (abs >= 1000000) return trimDecimal(safe / 1000000) + " млн";
+  if (abs >= 1000) return trimDecimal(safe / 1000) + "к";
+  return PLAIN.format(safe);
+}
+
 export function plural(count: number, one: string, few: string, many: string): string {
   const mod10 = Math.abs(count) % 10;
   const mod100 = Math.abs(count) % 100;

@@ -133,7 +133,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-dvh pb-16">
       <header className="sticky top-0 z-40 border-b border-ink-800/80 bg-ink-950/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3.5">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-5 sm:py-3.5">
           <Logo withText={false} size={38} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-mist-50">
@@ -150,7 +150,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-6xl gap-5 px-5 py-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start">
+      <main className="mx-auto grid max-w-6xl gap-4 px-4 py-5 sm:gap-5 sm:px-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start lg:py-6">
         <CalendarGrid
           month={month}
           onMonthChange={setMonth}
