@@ -41,6 +41,14 @@ function trimDecimal(value: number): string {
   return rounded.toFixed(1).replace(".", ",");
 }
 
+export function moneyAxis(value: number): string {
+  const safe = Number.isFinite(value) ? value : 0;
+  const abs = Math.abs(safe);
+  if (abs >= 1000000) return trimDecimal(safe / 1000000) + " млн ₽";
+  if (abs >= 1000) return trimDecimal(safe / 1000) + " тыс. ₽";
+  return trimDecimal(safe) + " ₽";
+}
+
 export function moneyCompact(value: number): string {
   const safe = Number.isFinite(value) ? value : 0;
   const abs = Math.abs(safe);

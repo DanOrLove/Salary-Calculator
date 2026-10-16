@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const GUARDED = ["/dashboard", "/setup"];
+const GUARDED = ["/dashboard", "/setup", "/reports"];
 const COOKIE_NAME = "sc_session";
 
 export function proxy(request: NextRequest) {
@@ -23,5 +23,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/dashboard/:path*", "/setup/:path*"],
+  matcher: ["/login", "/dashboard/:path*", "/setup/:path*", "/reports/:path*"],
 };

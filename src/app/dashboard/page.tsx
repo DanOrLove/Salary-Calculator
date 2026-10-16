@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { format, startOfMonth } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2, Settings as SettingsIcon } from "lucide-react";
+import { BarChart3, CheckCircle2, Settings as SettingsIcon } from "lucide-react";
 import { CalendarGrid, MonthSummary } from "@/components/CalendarGrid";
 import { DayEditor } from "@/components/DayEditor";
 import { Logo } from "@/components/Logo";
@@ -20,6 +21,7 @@ import { SCHEDULE_TITLE, isWorkByPattern } from "@/lib/schedule";
 import type { Sale } from "@/lib/types";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { status, employee, setEmployee, signOut } = useEmployee({
     requireOnboarded: true,
     redirectTo: "/login",
@@ -145,6 +147,10 @@ export default function DashboardPage() {
               {scheduleLabel} · выход {money(employee.base_payout)} · {fmtPercent(employee.sales_percent)}
             </p>
           </div>
+          <Button variant="ghost" size="sm" onClick={() => router.push("/reports")}>
+            <BarChart3 className="size-4" />
+            <span className="hidden sm:inline">Отчёты</span>
+          </Button>
           <ThemeToggle />
           <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}>
             <SettingsIcon className="size-4" />
