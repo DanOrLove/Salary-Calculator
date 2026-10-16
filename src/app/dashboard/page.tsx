@@ -8,6 +8,7 @@ import { CalendarGrid, MonthSummary } from "@/components/CalendarGrid";
 import { DayEditor } from "@/components/DayEditor";
 import { Logo } from "@/components/Logo";
 import { SettingsModal } from "@/components/SettingsModal";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button, LoadingScreen, Modal, Panel } from "@/components/ui";
 import { useEmployee } from "@/hooks/useEmployee";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
@@ -143,6 +144,7 @@ export default function DashboardPage() {
               {scheduleLabel} · выход {money(employee.base_payout)} · {fmtPercent(employee.sales_percent)}
             </p>
           </div>
+          <ThemeToggle />
           <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}>
             <SettingsIcon className="size-4" />
             <span className="hidden sm:inline">Настройки</span>
@@ -194,7 +196,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
-            className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-brand-500/40 bg-ink-900/95 px-4 py-2.5 text-sm font-medium text-brand-100 shadow-glow backdrop-blur-xl"
+            className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-brand-500/40 bg-ink-900/95 px-4 py-2.5 text-sm font-medium text-brand-100 shadow-[var(--sc-shadow)] backdrop-blur-xl"
           >
             <CheckCircle2 className="size-4 text-brand-300" />
             {toast}

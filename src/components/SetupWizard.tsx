@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Rocket, Sparkles } from "lucide-react";
 import { ScheduleEditor, type ScheduleDraft } from "./ScheduleEditor";
+import { ThemeToggle } from "./ThemeToggle";
 import { Button, Callout, TextField } from "./ui";
 import { money, number, percent as fmtPercent } from "@/lib/format";
 import { calcPayout } from "@/lib/payout";
@@ -201,7 +202,10 @@ export function SetupWizard({
   if (embedded) return card;
 
   return (
-    <main className="flex min-h-dvh items-center justify-center px-5 py-10">
+    <main className="relative flex min-h-dvh items-center justify-center px-5 py-10">
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+        <ThemeToggle />
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}

@@ -180,7 +180,7 @@ export function ScheduleEditor({
                   title={format(parseISO(iso), "d MMMM", { locale: ru }) + (isWork ? " — смена" : " — выходной")}
                   className={cn(
                     "size-7 rounded-xl",
-                    isWork ? "bg-brand-500 shadow-glow" : "bg-ink-750",
+                    isWork ? "bg-brand-500 shadow-[var(--sc-shadow)]" : "bg-ink-750",
                   )}
                 />
               );

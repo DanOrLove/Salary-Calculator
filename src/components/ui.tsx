@@ -18,10 +18,10 @@ type ButtonVariant = "primary" | "outline" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-brand-500 text-mist-50 hover:bg-brand-400 shadow-glow",
+  primary: "bg-brand-500 text-on-brand hover:bg-brand-400 shadow-[var(--sc-shadow)]",
   outline: "border border-ink-600 bg-ink-850/80 text-mist-100 hover:border-brand-500/70 hover:text-white",
   ghost: "text-mist-400 hover:bg-ink-800 hover:text-mist-100",
-  danger: "border border-red-500/25 bg-red-500/10 text-red-300 hover:bg-red-500/20",
+  danger: "border border-danger-line bg-danger-soft text-danger hover:bg-danger/15",
 };
 
 const SIZES: Record<ButtonSize, string> = {
@@ -136,7 +136,7 @@ export function Modal({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+          <div className="absolute inset-0 bg-overlay backdrop-blur-sm" onClick={onClose} />
           <motion.div
             role="dialog"
             aria-modal="true"
@@ -222,13 +222,13 @@ export function Segmented<T extends string>({
             onClick={() => onChange(option.value)}
             className={cn(
               "relative z-10 flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition-colors duration-200",
-              active ? "text-mist-50" : "text-mist-500 hover:text-mist-300",
+              active ? "text-on-brand" : "text-mist-500 hover:text-mist-300",
             )}
           >
             {active ? (
               <motion.span
                 layoutId={"segmented-" + (id ?? options.map((item) => item.value).join("-"))}
-                className="absolute inset-0 -z-10 rounded-xl bg-brand-500 shadow-glow"
+                className="absolute inset-0 -z-10 rounded-xl bg-brand-500 shadow-[var(--sc-shadow)]"
                 transition={{ type: "spring", stiffness: 400, damping: 34 }}
               />
             ) : null}
@@ -268,7 +268,7 @@ export function Callout({
       className={cn(
         "rounded-2xl border px-4 py-3 text-sm",
         tone === "error"
-          ? "border-red-500/25 bg-red-500/10 text-red-200"
+          ? "border-danger-line bg-danger-soft text-danger"
           : "border-brand-500/30 bg-brand-500/10 text-brand-200",
       )}
     >

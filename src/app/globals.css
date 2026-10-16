@@ -1,43 +1,141 @@
 @import "tailwindcss";
 
-@theme {
+/* ============================================================
+   Семантические переменные. Меняются от data-theme на <html>.
+   ============================================================ */
+
+:root,
+html[data-theme="dark"] {
+  --sc-bg: #0b0d0d;
+  --sc-surface: #181a1a;
+  --sc-surface-muted: #121414;
+  --sc-surface-raised: #1e2121;
+  --sc-swatch: #242828;
+  --sc-line: #2b302f;
+  --sc-line-strong: #383e3d;
+  --sc-grid: #2a302f;
+
+  --sc-text-strong: #ffffff;
+  --sc-text: #f3f7f5;
+  --sc-text-dim: #c3cdc9;
+  --sc-text-muted: #99a4a0;
+  --sc-text-faint: #79837f;
+  --sc-text-ghost: #5b6462;
+
+  --sc-work: #0e1c15;
+  --sc-work-hover: #13291e;
+
+  --sc-brand: #04653d;
+  --sc-brand-hover: #14a066;
+  --sc-brand-mark: #14a066;
+  --sc-brand-mid: #6fd9ad;
+  --sc-brand-soft: #b3f0d3;
+  --sc-brand-deep: #dff9ec;
+  --sc-brand-ink: #03502f;
+  --sc-on-brand: #ffffff;
+
+  --sc-gold: #ffca02;
+  --sc-gold-soft: #ffe07a;
+
+  --sc-danger: #fca5a5;
+  --sc-danger-line: rgba(248, 113, 113, 0.28);
+  --sc-danger-soft: rgba(248, 113, 113, 0.12);
+
+  --sc-shadow: 0 18px 45px -20px rgba(4, 101, 61, 0.95);
+  --sc-glow-a: rgba(4, 101, 61, 0.22);
+  --sc-glow-b: rgba(4, 101, 61, 0.12);
+  --sc-overlay: rgba(0, 0, 0, 0.7);
+  --sc-scrollbar: #2b302f;
+  --sc-scrollbar-hover: #383e3d;
+}
+
+html[data-theme="light"] {
+  --sc-bg: #eef1ef;
+  --sc-surface: #ffffff;
+  --sc-surface-muted: #ffffff;
+  --sc-surface-raised: #e8edea;
+  --sc-swatch: #dae2de;
+  --sc-line: #dde4e0;
+  --sc-line-strong: #c2cdc8;
+  --sc-grid: #e3e8e5;
+
+  --sc-text-strong: #07130f;
+  --sc-text: #0f1a16;
+  --sc-text-dim: #2c3833;
+  --sc-text-muted: #55635e;
+  --sc-text-faint: #6f7d78;
+  --sc-text-ghost: #93a09a;
+
+  --sc-work: #e9f6ef;
+  --sc-work-hover: #dbf0e5;
+
+  --sc-brand: #04653d;
+  --sc-brand-hover: #0a8a55;
+  --sc-brand-mark: #0a8a55;
+  --sc-brand-mid: #04653d;
+  --sc-brand-soft: #03502f;
+  --sc-brand-deep: #023b23;
+  --sc-brand-ink: #03502f;
+  --sc-on-brand: #ffffff;
+
+  --sc-gold: #d9a300;
+  --sc-gold-soft: #eab914;
+
+  --sc-danger: #b3261e;
+  --sc-danger-line: rgba(179, 38, 30, 0.25);
+  --sc-danger-soft: rgba(179, 38, 30, 0.08);
+
+  --sc-shadow: 0 16px 36px -24px rgba(4, 101, 61, 0.55);
+  --sc-glow-a: rgba(4, 101, 61, 0.1);
+  --sc-glow-b: rgba(4, 101, 61, 0.06);
+  --sc-overlay: rgba(10, 22, 16, 0.45);
+  --sc-scrollbar: #c2cdc8;
+  --sc-scrollbar-hover: #a7b4ae;
+}
+
+@theme inline {
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 
-  --color-ink-950: #0b0d0d;
-  --color-ink-900: #121414;
-  --color-ink-850: #181a1a;
-  --color-ink-800: #1e2121;
-  --color-ink-750: #242828;
-  --color-ink-700: #2b302f;
-  --color-ink-600: #383e3d;
+  --color-ink-950: var(--sc-bg);
+  --color-ink-900: var(--sc-surface-muted);
+  --color-ink-850: var(--sc-surface);
+  --color-ink-800: var(--sc-surface-raised);
+  --color-ink-750: var(--sc-swatch);
+  --color-ink-700: var(--sc-line);
+  --color-ink-600: var(--sc-line-strong);
 
-  --color-mist-50: #ffffff;
-  --color-mist-100: #f3f7f5;
-  --color-mist-200: #dfe7e3;
-  --color-mist-300: #c3cdc9;
-  --color-mist-400: #99a4a0;
-  --color-mist-500: #79837f;
-  --color-mist-600: #5b6462;
+  --color-mist-50: var(--sc-text-strong);
+  --color-mist-100: var(--sc-text);
+  --color-mist-200: var(--sc-text-dim);
+  --color-mist-300: var(--sc-text-dim);
+  --color-mist-400: var(--sc-text-muted);
+  --color-mist-500: var(--sc-text-faint);
+  --color-mist-600: var(--sc-text-ghost);
 
-  --color-moss-900: #13291e;
-  --color-moss-950: #0e1c15;
+  --color-brand-100: var(--sc-brand-deep);
+  --color-brand-200: var(--sc-brand-soft);
+  --color-brand-300: var(--sc-brand-mid);
+  --color-brand-400: var(--sc-brand-mark);
+  --color-brand-500: var(--sc-brand);
+  --color-brand-600: var(--sc-brand-ink);
+  --color-brand-700: var(--sc-brand-ink);
 
-  --color-gold-300: #ffe07a;
-  --color-gold-400: #ffca02;
-  --color-gold-500: #d9a700;
+  --color-moss-950: var(--sc-work);
+  --color-moss-900: var(--sc-work-hover);
 
-  --color-brand-100: #dff9ec;
-  --color-brand-200: #b3f0d3;
-  --color-brand-300: #6fd9ad;
-  --color-brand-400: #14a066;
-  --color-brand-500: #04653d;
-  --color-brand-600: #03502f;
-  --color-brand-700: #023b23;
+  --color-gold-300: var(--sc-gold-soft);
+  --color-gold-400: var(--sc-gold);
+  --color-gold-500: var(--sc-gold);
+
+  --color-on-brand: var(--sc-on-brand);
+  --color-danger: var(--sc-danger);
+  --color-danger-line: var(--sc-danger-line);
+  --color-danger-soft: var(--sc-danger-soft);
+  --color-overlay: var(--sc-overlay);
+  --color-grid-line: var(--sc-grid);
 
   --radius-4xl: 2rem;
-
-  --shadow-glow: 0 18px 45px -20px rgba(4, 101, 61, 0.95);
 }
 
 @layer base {
@@ -46,12 +144,17 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  html[data-theme="light"] {
+    color-scheme: light;
+  }
+
   body {
-    background-color: var(--color-ink-950);
-    color: var(--color-mist-100);
+    background-color: var(--sc-bg);
+    color: var(--sc-text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    transition: background-color 320ms ease, color 320ms ease;
   }
 
   input[type="number"]::-webkit-outer-spin-button,
@@ -64,21 +167,17 @@
     -moz-appearance: textfield;
     appearance: textfield;
   }
-
-  * {
-    outline-color: var(--color-brand-400);
-  }
 }
 
 @layer components {
   .glow-field {
     background:
-      radial-gradient(58% 42% at 50% 0%, rgba(4, 101, 61, 0.22), transparent 72%),
-      radial-gradient(42% 38% at 88% 100%, rgba(4, 101, 61, 0.12), transparent 70%);
+      radial-gradient(58% 42% at 50% 0%, var(--sc-glow-a), transparent 72%),
+      radial-gradient(42% 38% at 88% 100%, var(--sc-glow-b), transparent 70%);
   }
 
   .dashed-frame {
-    border: 1px dashed var(--color-ink-600);
+    border: 1px dashed var(--sc-line-strong);
     border-radius: var(--radius-3xl);
   }
 
@@ -88,6 +187,42 @@
 
   .no-scrollbar {
     scrollbar-width: none;
+  }
+
+  /* ---------- Ползунок темы ---------- */
+  .theme-switch {
+    --switch-travel: 38px;
+  }
+
+  .theme-switch .switch-knob {
+    transform: translateX(0);
+    transition: transform 460ms cubic-bezier(0.34, 1.32, 0.5, 1);
+  }
+
+  html[data-theme="light"] .theme-switch .switch-knob {
+    transform: translateX(var(--switch-travel));
+  }
+
+  .theme-switch .switch-sun {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 280ms ease, transform 280ms ease;
+  }
+
+  html[data-theme="dark"] .theme-switch .switch-sun {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+
+  .theme-switch .switch-moon {
+    opacity: 0;
+    transform: scale(0.55);
+    transition: opacity 280ms ease, transform 280ms ease;
+  }
+
+  html[data-theme="dark"] .theme-switch .switch-moon {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -101,11 +236,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-ink-700);
+  background: var(--sc-scrollbar);
   border-radius: 999px;
-  border: 2px solid var(--color-ink-950);
+  border: 2px solid var(--sc-bg);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-ink-600);
+  background: var(--sc-scrollbar-hover);
 }

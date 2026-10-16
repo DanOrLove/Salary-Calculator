@@ -107,13 +107,13 @@ export function CalendarGrid({
         </div>
       </header>
 
-      <div className="-mx-4 overflow-hidden border-y border-ink-700/60 bg-ink-700/60 sm:mx-0 sm:rounded-2xl sm:border">
+      <div className="-mx-4 overflow-hidden border-y border-ink-700/60 bg-grid-line sm:mx-0 sm:rounded-2xl sm:border">
         <div className="grid grid-cols-7 gap-px">
           {WEEKDAYS.map((day, index) => (
             <span
               key={day}
               className={cn(
-                "bg-ink-850 py-1.5 text-center text-[10px] font-semibold uppercase tracking-wide sm:py-2 sm:text-[11px]",
+                "bg-ink-800 py-1.5 text-center text-[10px] font-semibold uppercase tracking-wide sm:py-2 sm:text-[11px]",
                 index >= 5 ? "text-mist-600" : "text-mist-500",
               )}
             >
@@ -194,7 +194,7 @@ function DayCell({
       title={format(cell.date, "d MMMM yyyy", { locale: ru }) + (cell.isWork ? " — смена" : " — выходной")}
       className={cn(
         "relative flex min-h-[64px] flex-col justify-between p-1.5 text-left transition-colors duration-200 sm:min-h-[92px] sm:p-2.5",
-        cell.isWork ? "bg-moss-950 hover:bg-moss-900" : "bg-ink-900 hover:bg-ink-850",
+        cell.isWork ? "bg-moss-950 hover:bg-moss-900" : "bg-ink-900 hover:bg-ink-800",
         !cell.inMonth && "opacity-35",
         selected && "ring-2 ring-inset ring-brand-400",
       )}
@@ -204,7 +204,7 @@ function DayCell({
           className={cn(
             "grid size-7 place-items-center rounded-full text-[13px] font-semibold sm:size-8 sm:text-sm",
             cell.isToday
-              ? "bg-brand-400 font-bold text-ink-950"
+              ? "bg-brand-400 font-bold text-on-brand"
               : cell.isWork
                 ? "text-mist-100"
                 : "text-mist-500",

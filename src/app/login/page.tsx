@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, UserPlus } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button, Callout, Segmented, TextField } from "@/components/ui";
 import { db } from "@/lib/db";
 import { writeSession } from "@/lib/session";
@@ -67,7 +68,10 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center px-5 py-10">
+    <main className="relative flex min-h-dvh flex-col items-center justify-center px-5 py-10">
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md">
         <div className="mb-7 flex justify-center">
           <Logo />
