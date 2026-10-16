@@ -94,7 +94,22 @@ function localOverrides(): Record<string, Record<string, boolean>> {
 }
 
 function fail(message: string): never {
-  throw new Error(message);
+  const text = message || "";
+  if (text.includes("schema cache") || text.includes("Could not find the table") || text.includes("PGRST205")) {
+    throw new Error(
+      "База Supabase ещё не настроена: выполни файл supabase/schema.sql в Supabase -> SQL Editor -> Run.",
+    );
+  }
+  if (text.includes("Invalid API key") || text.includes("JWT") || text.includes("401")) {
+    throw new Error("Supabase не принял ключ. Проверь NEXT_PUBLIC_SUPABASE_ANON_KEY в .env.local.");
+  }
+  if (text.includes("Failed to fetch") || text.includes("fetch failed") || text.includes("ENOTFOUND")) {
+    throw new Error("Не удалось связаться с Supabase. Проверь NEXT_PUBLIC_SUPABASE_URL и подключение к интернету.");
+  }
+  if (text.includes("duplicate key") || text.includes("unique")) {
+    throw new Error("Сотрудник с таким именем и фамилией уже зарегистрирован.");
+  }
+  throw new Error(text || "Неизвестная ошибка базы данных");
 }
 
 export const db = {
