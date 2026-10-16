@@ -62,3 +62,9 @@ create policy day_overrides_open on public.day_overrides
 drop policy if exists sales_open on public.sales;
 create policy sales_open on public.sales
   for all to anon, authenticated using (true) with check (true);
+
+-- Проверка. В результате должны быть salary_days, pin_hash и pin_salt.
+select column_name, data_type, column_default
+from information_schema.columns
+where table_schema = 'public' and table_name = 'employees'
+order by ordinal_position;
