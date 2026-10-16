@@ -94,6 +94,23 @@ function localOverrides(): Record<string, Record<string, boolean>> {
   return readTable<Record<string, Record<string, boolean>>>(KEYS.overrides, {});
 }
 
+function isMissingColumn(error: { message?: string } | null | undefined, column: string): boolean {
+  const message = error?.message ?? "";
+  if (!message.includes(column)) return false;
+  return message.includes("schema cache") || message.includes("does not exist");
+}
+
+function warnOnce(): void {
+  if (warnedAboutSalaryDays) return;
+  warnedAboutSalaryDays = true;
+  console.warn(
+    "В таблице employees нет колонки salary_days — даты зарплаты не сохранятся. " +
+      "Выполни: alter table public.employees add column if not exists salary_days text not null default '';",
+  );
+}
+
+let warnedAboutSalaryDays = false;
+
 function fail(message: string): never {
   const text = message || "";
   if (text.includes("schema cache") || text.includes("Could not find the table") || text.includes("PGRST205")) {
@@ -136,22 +153,24 @@ export const db = {
     const key = fullNameKey(first, last);
     const sb = getSupabase();
     if (sb) {
-      const res = await sb
-        .from("employees")
-        .insert({
-          first_name: first,
-          last_name: last,
-          full_name_key: key,
-          sales_percent: 0,
-          base_payout: 0,
-          schedule_type: null,
-          schedule_anchor: null,
-          schedule_pattern: null,
-          salary_days: "",
-          onboarded: false,
-        })
-        .select("*")
-        .single();
+      const payload: Record<string, unknown> = {
+        first_name: first,
+        last_name: last,
+        full_name_key: key,
+        sales_percent: 0,
+        base_payout: 0,
+        schedule_type: null,
+        schedule_anchor: null,
+        schedule_pattern: null,
+        salary_days: "",
+        onboarded: false,
+      };
+      let res = await sb.from("employees").insert(payload).select("*").single();
+      if (res.error && isMissingColumn(res.error, "salary_days")) {
+        warnOnce();
+        const { salary_days: _ignored, ...rest } = payload;
+        res = await sb.from("employees").insert(rest).select("*").single();
+      }
       if (res.error) fail(res.error.message);
       return toEmployee(res.data as Record<string, unknown>);
     }
@@ -186,7 +205,12 @@ export const db = {
   async updateEmployee(id: string, patch: Partial<Employee>): Promise<Employee> {
     const sb = getSupabase();
     if (sb) {
-      const res = await sb.from("employees").update(patch).eq("id", id).select("*").single();
+      let res = await sb.from("employees").update(patch).eq("id", id).select("*").single();
+      if (res.error && isMissingColumn(res.error, "salary_days") && "salary_days" in patch) {
+        warnOnce();
+        const { salary_days: _ignored, ...rest } = patch;
+        res = await sb.from("employees").update(rest).eq("id", id).select("*").single();
+      }
       if (res.error) fail(res.error.message);
       return toEmployee(res.data as Record<string, unknown>);
     }
