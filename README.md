@@ -2,9 +2,10 @@
 
 Личный кабинет сотрудника: график смен, продажи и автоматический расчёт выплат.
 
-Живой продукт для розницы и сменных графиков: сотрудник входит по имени и фамилии (без логина и пароля),
-указывает свой процент от продаж и сумму выхода, настраивает график 2/2 или 3/3 — и дальше просто
-отмечает, на сколько продал за день. Выплату сайт считает сам.
+Живой продукт для розницы и сменных графиков: сотрудник регистрируется по имени и фамилии,
+придумывает код из 4 цифр — и дальше входит только по нему. Указывает процент от продаж и сумму
+выхода, настраивает график 2/2 или 3/3 и просто отмечает, на сколько продал за день. Выплату,
+отчёты и обратный отсчёт до зарплаты сайт считает сам.
 
 ## Формула
 
@@ -69,10 +70,6 @@
    переписывать компоненты не нужно.
 3. Выбор хранится в localStorage (`salarycalc.theme.v1`) и дублируется в cookie `sc_theme`.
 4. Если выбора ещё нет, берётся системная тема из `prefers-color-scheme`.
-
-| Светлая | Тёмная |
-| --- | --- |
-| ![Светлая](docs/screenshots/dashboard-light.png) | ![Тёмная](docs/screenshots/dashboard-desktop.png) |
 
 ## Вход по коду
 
@@ -147,12 +144,19 @@
 
 ## Стек
 
-- Next.js 16 (App Router) + React 19 + TypeScript
-- Tailwind CSS v4 — дизайн-токены вынесены в src/app/globals.css
-- framer-motion — переходы страниц, календаря, модалок и счётчиков
-- date-fns — работа с датами и русская локаль
-- Supabase — база данных (Postgres)
-- Vercel — хостинг
+| Слой | Технология | Версия |
+| --- | --- | --- |
+| Фронтенд | Next.js, App Router | 16.4.2 |
+| | React | 19.3.1 |
+| | TypeScript | 5.9.3 |
+| Стили | Tailwind CSS | 4.3.3 |
+| Анимации | framer-motion | 14.3.0 |
+| Даты | date-fns (локаль ru) | 4.4.0 |
+| Иконки | lucide-react | 1.58.0 |
+| Данные | @supabase/supabase-js | 2.118.0 |
+| Хостинг | Vercel | — |
+
+Сторонних библиотек для графиков нет: линии рисуются своим SVG (src/components/charts/LineChart.tsx).
 
 ## Запуск локально
 
@@ -182,11 +186,27 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш-anon-key
 
 Если переменные пустые — приложение автоматически откатывается на localStorage.
 
+### Миграции
+
+Файл supabase/schema.sql можно выполнять повторно: все создания идут с `if not exists`.
+Если таблицы уже были созданы более ранней версией схемы, допиши недостающие колонки:
+
+~~~sql
+alter table public.employees add column if not exists salary_days text not null default '';
+alter table public.employees add column if not exists pin_hash text not null default '';
+alter table public.employees add column if not exists pin_salt text not null default '';
+~~~
+
+Слой данных (src/lib/db.ts) сам выбрасывает из запроса колонки, которых нет в старой схеме,
+и пишет подсказку в консоль. Поэтому приложение не падает на устаревшей базе — просто не сохраняет
+эти поля, пока миграция не выполнена.
+
 ### Важно про безопасность
 
-Вход сделан без пароля, поэтому клиент ходит в Supabase с anon-ключом и открытыми RLS-политиками
-(см. конец supabase/schema.sql). Это осознанный компромисс ради входа «просто по имени».
-Если проект вырастет — стоит добавить хотя бы PIN или Supabase Auth и заменить политики на auth.uid().
+Код из 4 цифр защищает от случайного входа, но не заменяет аутентификацию: клиент ходит в Supabase
+с anon-ключом и открытыми RLS-политиками (см. конец supabase/schema.sql). Значит `pin_hash`
+читается из браузера, а 4 цифры перебираются. Если пойдут реальные выплаты — нужен Supabase Auth
+с политиками на `auth.uid()`.
 
 ## Деплой на Vercel
 
@@ -204,30 +224,51 @@ vercel --prod
 ~~~text
 src/
   app/
-    layout.tsx          корневой layout, тема, шрифты
-    globals.css         дизайн-токены Tailwind v4 (цвета со скриншота)
-    page.tsx            точка входа: решает, куда отправить пользователя
-    login/page.tsx      вход и регистрация по имени и фамилии
-    setup/page.tsx      экран быстрой настройки (2 шага)
-    dashboard/page.tsx  календарь, продажи, итоги месяца
+    layout.tsx            корневой layout, тема до первой отрисовки
+    globals.css           семантические токены тем + служебные классы
+    page.tsx              точка входа: решает, куда отправить пользователя
+    register/page.tsx     регистрация: имя, фамилия, код из 4 цифр
+    login/page.tsx        вход по имени и коду
+    setup/page.tsx        экран быстрой настройки (2 шага)
+    dashboard/page.tsx    календарь, продажи, итоги месяца, строка до зарплаты
+    reports/page.tsx      отчёты: сводка и графики за месяц и за всё время
+    icon.svg              иконка сайта
   components/
-    CalendarGrid.tsx    календарь смен + плитки статистики месяца
-    ScheduleEditor.tsx  выбор 2/2 или 3/3, рабочие дни цикла, превью графика
-    DayEditor.tsx       ввод суммы продаж и живой расчёт выплаты
-    SetupWizard.tsx     визард первичной настройки
-    SettingsModal.tsx   настройки выплат и графика
-    ui.tsx              Button, TextField, Modal, Segmented, Badge и прочее
-  hooks/useEmployee.ts  загрузка сотрудника, редиректы, выход
+    PinPad.tsx            круглая клавиатура для 4-значного кода
+    CalendarGrid.tsx      сетка календаря + плитки статистики месяца
+    ScheduleEditor.tsx    выбор 2/2 или 3/3, рабочие дни цикла, превью графика
+    DayEditor.tsx         ввод суммы продаж и живой расчёт выплаты
+    SetupWizard.tsx       визард первичной настройки
+    SettingsModal.tsx     настройки выплат, графика и дат зарплаты
+    SalaryDaysField.tsx   ввод дат зарплаты с клавиатуры
+    SalaryCountdown.tsx   строка «До зарплаты через 4 дня»
+    ReportSummary.tsx     карточка сводки отчёта
+    charts/LineChart.tsx  SVG-график линий с тултипом и легендой
+    ThemeToggle.tsx       ползунок светлой и тёмной темы
+    AnimatedNumber.tsx    счётчик с анимацией
+    Logo.tsx, ui.tsx      логотип и базовые элементы интерфейса
+  hooks/
+    useEmployee.ts        загрузка сотрудника, редиректы, простой 5 часов
+    useTheme.ts           применение и сохранение темы
+    useMediaQuery.ts      адаптивные проверки
+    useElementWidth.ts    ширина контейнера для графиков
   lib/
-    db.ts               единый слой данных (Supabase или localStorage)
-    session.ts          сессия в localStorage + cookie
-    schedule.ts         логика циклических графиков
-    calendar.ts         построение сетки месяца
-    payout.ts           формула выплаты
-    supabase.ts         клиент Supabase из env
-    format.ts           форматирование денег и чисел (ru-RU)
-  middleware.ts         серверный редирект по cookie
-supabase/schema.sql     схема БД
+    types.ts              типы Employee, Sale, Session
+    db.ts                 слой данных: Supabase или localStorage
+    supabase.ts           клиент Supabase из переменных окружения
+    session.ts            сессия, срок 5 часов, cookie
+    pin.ts                хеширование и проверка 4-значного кода
+    schedule.ts           логика циклических графиков
+    calendar.ts           построение сетки месяца и итогов
+    payout.ts             формула выплаты
+    report.ts             расчёты для отчётов
+    salary.ts             даты зарплаты и ближайшая выплата
+    amount.ts             разбор введённых сумм
+    format.ts             форматирование денег и чисел (ru-RU)
+    utils.ts              склейка классов
+  proxy.ts                серверный редирект по cookie сессии
+supabase/schema.sql       схема БД и политики
+docs/screenshots/         скриншоты для README
 ~~~
 
 ## Дизайн
@@ -243,3 +284,24 @@ supabase/schema.sql     схема БД
 | brand-300 | #6fd9ad | акценты и цифры |
 | mist-100 | #f3f7f5 | основной текст |
 | mist-500 | #79837f | подписи |
+
+В светлой теме набор значений тот же по смыслу, но другие значения переменных: зелёный для текста
+темнее, жёлтая полоска продаж насыщеннее, красный удаления глубже. Меняются только переменные —
+компоненты не переписываются.
+
+## Статус
+
+| Что | Где | Состояние |
+| --- | --- | --- |
+| Код | github.com/DanOrLove/Salary-Calculator | ветка `main`, актуальная версия |
+| Прод | salary-calculator-sable.vercel.app | задеплоен, Vercel Authentication снята |
+| База | chmraqnagmpwvljuprka.supabase.co | таблицы `employees`, `day_overrides`, `sales` созданы |
+| Переменные | Vercel → Production | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+
+Что стоит доделать:
+
+1. **Миграция колонок.** Выполни три `alter table` из раздела «Миграции» — сейчас приложение
+   работает, но не сохраняет даты зарплаты и код входа.
+2. **Автодеплой из GitHub.** Установи [Vercel GitHub App](https://github.com/apps/vercel/installations/new)
+   и выбери репозиторий — после этого каждый `git push` будет деплоиться сам.
+3. **Настоящая аутентификация**, если проект выйдет за пределы доверенной команды.
