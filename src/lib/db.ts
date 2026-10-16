@@ -66,6 +66,8 @@ function toEmployee(row: Record<string, unknown>): Employee {
     schedule_anchor: row.schedule_anchor ? String(row.schedule_anchor) : null,
     schedule_pattern: row.schedule_pattern ? String(row.schedule_pattern) : null,
     salary_days: row.salary_days ? String(row.salary_days) : "",
+    pin_hash: row.pin_hash ? String(row.pin_hash) : "",
+    pin_salt: row.pin_salt ? String(row.pin_salt) : "",
     onboarded: Boolean(row.onboarded),
     created_at: String(row.created_at ?? new Date().toISOString()),
   };
@@ -94,22 +96,57 @@ function localOverrides(): Record<string, Record<string, boolean>> {
   return readTable<Record<string, Record<string, boolean>>>(KEYS.overrides, {});
 }
 
-function isMissingColumn(error: { message?: string } | null | undefined, column: string): boolean {
+type Supabase = NonNullable<ReturnType<typeof getSupabase>>;
+
+const warnedColumns = new Set<string>();
+
+/** Достаёт имя колонки из ответа PostgREST: "Could not find the 'x' column of ..." */
+function missingColumnName(error: { message?: string } | null | undefined): string | null {
   const message = error?.message ?? "";
-  if (!message.includes(column)) return false;
-  return message.includes("schema cache") || message.includes("does not exist");
+  const marker = "Could not find the '";
+  const start = message.indexOf(marker);
+  if (start === -1) return null;
+  const rest = message.slice(start + marker.length);
+  const end = rest.indexOf("'");
+  if (end === -1) return null;
+  return rest.slice(0, end);
 }
 
-function warnOnce(): void {
-  if (warnedAboutSalaryDays) return;
-  warnedAboutSalaryDays = true;
+function warnMissingColumn(column: string): void {
+  if (warnedColumns.has(column)) return;
+  warnedColumns.add(column);
   console.warn(
-    "В таблице employees нет колонки salary_days — даты зарплаты не сохранятся. " +
-      "Выполни: alter table public.employees add column if not exists salary_days text not null default '';",
+    "В таблице employees нет колонки " + column + " — эти данные не сохранятся. Выполни в Supabase: " +
+      "alter table public.employees add column if not exists " + column + " text not null default '';",
   );
 }
 
-let warnedAboutSalaryDays = false;
+/** Пишет строку, на ходу выбрасывая колонки, которых нет в старой схеме. */
+async function insertTolerant(sb: Supabase, table: string, payload: Record<string, unknown>) {
+  const current = { ...payload };
+  let last = await sb.from(table).insert(current).select("*").single();
+  for (let attempt = 0; attempt < 5 && last.error; attempt += 1) {
+    const column = missingColumnName(last.error);
+    if (!column || !(column in current)) break;
+    warnMissingColumn(column);
+    delete current[column];
+    last = await sb.from(table).insert(current).select("*").single();
+  }
+  return last;
+}
+
+async function updateTolerant(sb: Supabase, table: string, id: string, patch: Record<string, unknown>) {
+  const current = { ...patch };
+  let last = await sb.from(table).update(current).eq("id", id).select("*").single();
+  for (let attempt = 0; attempt < 5 && last.error; attempt += 1) {
+    const column = missingColumnName(last.error);
+    if (!column || !(column in current)) break;
+    warnMissingColumn(column);
+    delete current[column];
+    last = await sb.from(table).update(current).eq("id", id).select("*").single();
+  }
+  return last;
+}
 
 function fail(message: string): never {
   const text = message || "";
@@ -146,14 +183,21 @@ export const db = {
     return localEmployees().find((item) => item.full_name_key === key) ?? null;
   },
 
-  async createEmployee(firstName: string, lastName: string): Promise<Employee> {
-    const first = firstName.trim();
-    const last = lastName.trim();
+  async createEmployee(input: {
+    firstName: string;
+    lastName: string;
+    pinHash?: string;
+    pinSalt?: string;
+  }): Promise<Employee> {
+    const first = input.firstName.trim();
+    const last = input.lastName.trim();
     if (!first || !last) fail("Укажите имя и фамилию");
     const key = fullNameKey(first, last);
+    const pinHash = input.pinHash ?? "";
+    const pinSalt = input.pinSalt ?? "";
     const sb = getSupabase();
     if (sb) {
-      const payload: Record<string, unknown> = {
+      const res = await insertTolerant(sb, "employees", {
         first_name: first,
         last_name: last,
         full_name_key: key,
@@ -163,14 +207,10 @@ export const db = {
         schedule_anchor: null,
         schedule_pattern: null,
         salary_days: "",
+        pin_hash: pinHash,
+        pin_salt: pinSalt,
         onboarded: false,
-      };
-      let res = await sb.from("employees").insert(payload).select("*").single();
-      if (res.error && isMissingColumn(res.error, "salary_days")) {
-        warnOnce();
-        const { salary_days: _ignored, ...rest } = payload;
-        res = await sb.from("employees").insert(rest).select("*").single();
-      }
+      });
       if (res.error) fail(res.error.message);
       return toEmployee(res.data as Record<string, unknown>);
     }
@@ -185,6 +225,8 @@ export const db = {
       schedule_anchor: null,
       schedule_pattern: null,
       salary_days: "",
+      pin_hash: pinHash,
+      pin_salt: pinSalt,
       onboarded: false,
       created_at: new Date().toISOString(),
     };
@@ -205,12 +247,7 @@ export const db = {
   async updateEmployee(id: string, patch: Partial<Employee>): Promise<Employee> {
     const sb = getSupabase();
     if (sb) {
-      let res = await sb.from("employees").update(patch).eq("id", id).select("*").single();
-      if (res.error && isMissingColumn(res.error, "salary_days") && "salary_days" in patch) {
-        warnOnce();
-        const { salary_days: _ignored, ...rest } = patch;
-        res = await sb.from("employees").update(rest).eq("id", id).select("*").single();
-      }
+      const res = await updateTolerant(sb, "employees", id, patch as Record<string, unknown>);
       if (res.error) fail(res.error.message);
       return toEmployee(res.data as Record<string, unknown>);
     }

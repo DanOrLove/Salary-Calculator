@@ -14,12 +14,16 @@ create table if not exists public.employees (
   schedule_anchor date,
   schedule_pattern text,
   salary_days text not null default '',
+  pin_hash text not null default '',
+  pin_salt text not null default '',
   onboarded boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 -- на случай, если таблица уже была создана раньше
 alter table public.employees add column if not exists salary_days text not null default '';
+alter table public.employees add column if not exists pin_hash text not null default '';
+alter table public.employees add column if not exists pin_salt text not null default '';
 
 create table if not exists public.day_overrides (
   employee_id uuid not null references public.employees(id) on delete cascade,

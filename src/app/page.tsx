@@ -15,7 +15,7 @@ export default function HomePage() {
     const route = async () => {
       const session = readSession();
       if (!session) {
-        router.replace("/login");
+        router.replace("/register");
         return;
       }
       try {
@@ -23,12 +23,12 @@ export default function HomePage() {
         if (cancelled) return;
         if (!employee) {
           clearSession();
-          router.replace("/login");
+          router.replace("/register");
           return;
         }
         router.replace(employee.onboarded ? "/dashboard" : "/setup");
       } catch {
-        if (!cancelled) router.replace("/login");
+        if (!cancelled) router.replace("/register");
       }
     };
 

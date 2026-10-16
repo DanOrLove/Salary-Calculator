@@ -12,6 +12,9 @@ export interface Employee {
   schedule_pattern: string | null;
   /** Дни месяца, когда приходит зарплата: "5,20" */
   salary_days: string;
+  /** SHA-256 от соли и 4-значного кода */
+  pin_hash: string;
+  pin_salt: string;
   onboarded: boolean;
   created_at: string;
 }
@@ -36,4 +39,6 @@ export interface Session {
   firstName: string;
   lastName: string;
   createdAt: string;
+  /** Время последней активности — от него считается 5-часовой простой */
+  lastActivityAt: string;
 }

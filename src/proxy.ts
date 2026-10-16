@@ -13,7 +13,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (hasSession && pathname === "/login") {
+  if (hasSession && (pathname === "/login" || pathname === "/register")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
@@ -23,5 +23,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/dashboard/:path*", "/setup/:path*", "/reports/:path*"],
+  matcher: ["/login", "/register", "/dashboard/:path*", "/setup/:path*", "/reports/:path*"],
 };

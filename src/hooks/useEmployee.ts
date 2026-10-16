@@ -3,10 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/db";
-import { clearSession, readSession, writeSession } from "@/lib/session";
+import { clearSession, readSession, touchSession, writeSession } from "@/lib/session";
 import type { Employee } from "@/lib/types";
 
 export type GateStatus = "loading" | "anonymous" | "ready";
+
+/** Как часто проверяем, не истекла ли сессия. */
+const EXPIRY_CHECK_MS = 30 * 1000;
 
 export function useEmployee(options?: { requireOnboarded?: boolean; redirectTo?: string }) {
   const requireOnboarded = options?.requireOnboarded ?? false;
@@ -51,12 +54,51 @@ export function useEmployee(options?: { requireOnboarded?: boolean; redirectTo?:
     }
   }, [status, employee, requireOnboarded, redirectTo, router]);
 
+  // Продлеваем сессию на активности и выкидываем после 5 часов простоя.
+  useEffect(() => {
+    if (status !== "ready") return;
+
+    const expire = () => {
+      clearSession();
+      setEmployee(null);
+      setStatus("anonymous");
+    };
+
+    const verify = () => {
+      if (!readSession()) expire();
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") verify();
+    };
+
+    const timer = window.setInterval(verify, EXPIRY_CHECK_MS);
+    window.addEventListener("pointerdown", touchSession, { passive: true });
+    window.addEventListener("keydown", touchSession);
+    window.addEventListener("wheel", touchSession, { passive: true });
+    window.addEventListener("touchstart", touchSession, { passive: true });
+    window.addEventListener("focus", verify);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("pointerdown", touchSession);
+      window.removeEventListener("keydown", touchSession);
+      window.removeEventListener("wheel", touchSession);
+      window.removeEventListener("touchstart", touchSession);
+      window.removeEventListener("focus", verify);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [status]);
+
   const startSession = useCallback((next: Employee) => {
+    const now = new Date().toISOString();
     writeSession({
       employeeId: next.id,
       firstName: next.first_name,
       lastName: next.last_name,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      lastActivityAt: now,
     });
     setEmployee(next);
     setStatus("ready");
