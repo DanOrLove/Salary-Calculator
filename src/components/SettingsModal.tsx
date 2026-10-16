@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut } from "lucide-react";
+import { SalaryDaysField } from "./SalaryDaysField";
 import { ScheduleEditor, type ScheduleDraft } from "./ScheduleEditor";
 import { Button, Callout, Modal, Segmented, TextField } from "./ui";
 import { formatAmountInput, parseAmount } from "@/lib/amount";
@@ -30,6 +31,7 @@ export function SettingsModal({
   const [tab, setTab] = useState<Tab>("pay");
   const [salesPercent, setSalesPercent] = useState("0");
   const [basePayout, setBasePayout] = useState("0");
+  const [salaryDays, setSalaryDays] = useState("");
   const [schedule, setSchedule] = useState<ScheduleDraft>({
     type: "2/2",
     anchor: toIso(new Date()),
@@ -42,6 +44,7 @@ export function SettingsModal({
     if (!open) return;
     setSalesPercent(formatAmountInput(employee.sales_percent));
     setBasePayout(formatAmountInput(employee.base_payout));
+    setSalaryDays(employee.salary_days ?? "");
     const type = employee.schedule_type ?? "2/2";
     setSchedule({
       type,
@@ -67,6 +70,7 @@ export function SettingsModal({
         schedule_type: schedule.type,
         schedule_anchor: schedule.anchor,
         schedule_pattern: schedule.pattern,
+        salary_days: salaryDays,
       });
       onSaved(updated);
       onClose();
@@ -116,6 +120,8 @@ export function SettingsModal({
                   onChange={(event) => setBasePayout(event.target.value)}
                 />
               </div>
+              <SalaryDaysField value={salaryDays} onChange={setSalaryDays} />
+
               <p className="rounded-2xl border border-ink-700/70 bg-ink-900/60 px-4 py-3 text-xs text-mist-500">
                 Пример: продажи {money(50000)} → выплата{" "}
                 <span className="font-semibold text-brand-200">{money(preview)}</span> ({number(baseValue)} ₽ +{" "}

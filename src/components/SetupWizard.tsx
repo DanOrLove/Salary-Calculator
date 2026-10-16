@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Rocket, Sparkles } from "lucide-react";
+import { SalaryDaysField } from "./SalaryDaysField";
 import { ScheduleEditor, type ScheduleDraft } from "./ScheduleEditor";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button, Callout, TextField } from "./ui";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 export interface SetupPayload {
   salesPercent: number;
   basePayout: number;
+  salaryDays: string;
   schedule: ScheduleDraft;
 }
 
@@ -36,6 +38,7 @@ export function SetupWizard({
   const [direction, setDirection] = useState(1);
   const [salesPercent, setSalesPercent] = useState(String(initial.salesPercent));
   const [basePayout, setBasePayout] = useState(String(initial.basePayout));
+  const [salaryDays, setSalaryDays] = useState(initial.salaryDays ?? "");
   const [schedule, setSchedule] = useState<ScheduleDraft>(initial.schedule);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -54,7 +57,7 @@ export function SetupWizard({
     setSaving(true);
     setError(null);
     try {
-      await onComplete({ salesPercent: percentValue, basePayout: baseValue, schedule });
+      await onComplete({ salesPercent: percentValue, basePayout: baseValue, salaryDays, schedule });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не удалось сохранить настройки");
     } finally {
@@ -146,6 +149,12 @@ export function SetupWizard({
                   {number(baseValue)} ₽ выход + {fmtPercent(percentValue)} от {number(exampleTotal)} ₽
                 </p>
               </div>
+
+              <SalaryDaysField
+                value={salaryDays}
+                onChange={setSalaryDays}
+                hint="День месяца, когда приходит зарплата. Нажми Enter, чтобы добавить."
+              />
 
               <div className="flex gap-2">
                 {onCancel ? (

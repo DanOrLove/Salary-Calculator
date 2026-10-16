@@ -22,6 +22,7 @@ export default function SetupPage() {
         schedule_type: payload.schedule.type,
         schedule_anchor: payload.schedule.anchor,
         schedule_pattern: payload.schedule.pattern,
+        salary_days: payload.salaryDays,
         onboarded: true,
       });
       setEmployee(updated);
@@ -41,6 +42,7 @@ export default function SetupPage() {
       initial={{
         salesPercent: employee.sales_percent,
         basePayout: employee.base_payout,
+        salaryDays: employee.salary_days ?? "",
         schedule: {
           type,
           anchor: employee.schedule_anchor ?? toIso(new Date()),

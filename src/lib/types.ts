@@ -10,6 +10,8 @@ export interface Employee {
   schedule_type: ScheduleType | null;
   schedule_anchor: string | null;
   schedule_pattern: string | null;
+  /** Дни месяца, когда приходит зарплата: "5,20" */
+  salary_days: string;
   onboarded: boolean;
   created_at: string;
 }

@@ -65,6 +65,7 @@ function toEmployee(row: Record<string, unknown>): Employee {
     schedule_type: type === "2/2" || type === "3/3" ? type : null,
     schedule_anchor: row.schedule_anchor ? String(row.schedule_anchor) : null,
     schedule_pattern: row.schedule_pattern ? String(row.schedule_pattern) : null,
+    salary_days: row.salary_days ? String(row.salary_days) : "",
     onboarded: Boolean(row.onboarded),
     created_at: String(row.created_at ?? new Date().toISOString()),
   };
@@ -146,6 +147,7 @@ export const db = {
           schedule_type: null,
           schedule_anchor: null,
           schedule_pattern: null,
+          salary_days: "",
           onboarded: false,
         })
         .select("*")
@@ -163,6 +165,7 @@ export const db = {
       schedule_type: null,
       schedule_anchor: null,
       schedule_pattern: null,
+      salary_days: "",
       onboarded: false,
       created_at: new Date().toISOString(),
     };

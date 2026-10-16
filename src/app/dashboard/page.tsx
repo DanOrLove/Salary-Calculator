@@ -7,6 +7,7 @@ import { CheckCircle2, Settings as SettingsIcon } from "lucide-react";
 import { CalendarGrid, MonthSummary } from "@/components/CalendarGrid";
 import { DayEditor } from "@/components/DayEditor";
 import { Logo } from "@/components/Logo";
+import { SalaryCountdown } from "@/components/SalaryCountdown";
 import { SettingsModal } from "@/components/SettingsModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button, LoadingScreen, Modal, Panel } from "@/components/ui";
@@ -151,6 +152,15 @@ export default function DashboardPage() {
           </Button>
         </div>
       </header>
+
+      <div className="border-b border-ink-800/60 bg-ink-900/40">
+        <div className="mx-auto flex max-w-6xl items-center px-4 py-2 sm:px-5">
+          <SalaryCountdown
+            salaryDays={employee.salary_days}
+            onConfigure={() => setSettingsOpen(true)}
+          />
+        </div>
+      </div>
 
       <main className="mx-auto grid max-w-6xl gap-4 px-4 py-5 sm:gap-5 sm:px-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start lg:py-6">
         <CalendarGrid
