@@ -68,7 +68,11 @@ export default function LoginPage() {
       if (!employee.pin_hash) {
         const salt = randomSalt();
         const pinHash = await hashPin(pin, salt);
-        current = await db.updateEmployee(employee.id, { pin_hash: pinHash, pin_salt: salt });
+        try {
+          current = await db.updateEmployee(employee.id, { pin_hash: pinHash, pin_salt: salt });
+        } catch {
+          // схема без колонок pin_hash/pin_salt — входим, просто не сохраняем код
+        }
       }
 
       const now = new Date().toISOString();

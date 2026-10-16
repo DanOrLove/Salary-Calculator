@@ -124,28 +124,39 @@ function warnMissingColumn(column: string): void {
 /** Пишет строку, на ходу выбрасывая колонки, которых нет в старой схеме. */
 async function insertTolerant(sb: Supabase, table: string, payload: Record<string, unknown>) {
   const current = { ...payload };
-  let last = await sb.from(table).insert(current).select("*").single();
-  for (let attempt = 0; attempt < 5 && last.error; attempt += 1) {
-    const column = missingColumnName(last.error);
-    if (!column || !(column in current)) break;
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const res = await sb.from(table).insert(current).select("*").single();
+    if (!res.error) return res;
+
+    const column = missingColumnName(res.error);
+    if (!column || !(column in current)) return res;
+
     warnMissingColumn(column);
     delete current[column];
-    last = await sb.from(table).insert(current).select("*").single();
   }
-  return last;
+
+  return sb.from(table).insert(current).select("*").single();
 }
 
 async function updateTolerant(sb: Supabase, table: string, id: string, patch: Record<string, unknown>) {
   const current = { ...patch };
-  let last = await sb.from(table).update(current).eq("id", id).select("*").single();
-  for (let attempt = 0; attempt < 5 && last.error; attempt += 1) {
-    const column = missingColumnName(last.error);
-    if (!column || !(column in current)) break;
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    // все поля оказались неизвестны схеме — обновлять нечего
+    if (Object.keys(current).length === 0) break;
+
+    const res = await sb.from(table).update(current).eq("id", id).select("*").single();
+    if (!res.error) return res;
+
+    const column = missingColumnName(res.error);
+    if (!column || !(column in current)) return res;
+
     warnMissingColumn(column);
     delete current[column];
-    last = await sb.from(table).update(current).eq("id", id).select("*").single();
   }
-  return last;
+
+  return sb.from(table).select("*").eq("id", id).single();
 }
 
 function fail(message: string): never {
@@ -249,6 +260,7 @@ export const db = {
     if (sb) {
       const res = await updateTolerant(sb, "employees", id, patch as Record<string, unknown>);
       if (res.error) fail(res.error.message);
+      if (!res.data) fail("Не удалось обновить запись сотрудника");
       return toEmployee(res.data as Record<string, unknown>);
     }
     const next = localEmployees().map((item) => (item.id === id ? { ...item, ...patch } : item));
